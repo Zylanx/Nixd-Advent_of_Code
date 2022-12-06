@@ -4,6 +4,7 @@ let
     misc-utils = import ./misc-utils.nix;
     pipe = import ./pipe.nix;
     string-utils = import ./string-utils.nix;
+    func-utils = import ./func-utils.nix;
 in
     {
         args = arg-utils;
@@ -11,4 +12,5 @@ in
         misc = misc-utils;
         pipe = pipe;
         strings = string-utils;
+        funcs = func-utils;
     }
