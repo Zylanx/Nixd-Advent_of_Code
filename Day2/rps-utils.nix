@@ -47,5 +47,37 @@ let
                 6
             else
                 0);
+
+    # String -> Boolean TODO: I wonder if I could make them like Maybe's and chain them. Food for thought
+    isAltLose = pipef [
+        toLower
+        (eq "x")
+    ];
+    isAltDraw = pipef [
+        toLower
+        (eq "y")
+    ];
+    isAltWin = pipef [
+        toLower
+        (eq "z")
+    ];
+
+    # These are the win and loss mappings for Part 2. TODO: This could replace Part 1 by producing an attrset mapping.
+    altWinRock = "B";
+    altWinPaper = "C";
+    altWinScissors = "A";
+
+    altLoseRock = "C";
+    altLosePaper = "A";
+    altLoseScissors = "B";
+
+    rpsAltEval = player1: player2: let
+        player2Rps = toRps player2 - 1;
+
+        winChar = elemAt [ altWinRock altWinPaper altWinScissors ] player2Rps;
+        drawChar = player2;
+        loseChar = elemAt [ altLoseRock altLosePaper altLoseScissors ] player2Rps;
+    in
+        rpsEval (if isAltLose player1 then loseChar else if isAltDraw player1 then drawChar else winChar) player2;
 in
-    rpsEval
+    { inherit rpsEval rpsAltEval; }

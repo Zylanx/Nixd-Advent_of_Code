@@ -16,6 +16,6 @@ in
         splitLines
         (map (splitString " "))
         (map reverseList)
-        (map (uncurry rps.rpsEval))
+        (map (uncurry rps.rpsAltEval))
         lists.total
     ]
