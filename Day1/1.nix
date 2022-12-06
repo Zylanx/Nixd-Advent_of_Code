@@ -1,20 +1,23 @@
 #!/usr/bin/env -S nix-instantiate --eval --strict --arg nothing null
 { input_file ? null }:
 let
-    inherit (builtins) map foldl' add;
-    inherit (import <nixpkgs/lib>) splitString toInt removeSuffix removePrefix;
-    arg-utils = import ../arg-utils.nix;
-    list-utils = import ../list-utils.nix;
-    
-    input_file_contents = arg-utils.files.fromPath input_file;
+    inherit (builtins) map foldl';
+    inherit (import <nixpkgs/lib>) take;
 
-    # string -> list[int]
-    toInventory = string: map toInt (splitString "\n" (removeSuffix "\n" (removePrefix "\n" string)));
-    # list[int] -> int
-    totalInventory = foldl' add 0;
+    utils = import ../utils.nix;
+    inherit (utils) lists strings misc args;
+    inherit (utils.pipe) pipef;
 
-    elf_inventories = map (inventory: totalInventory (toInventory inventory)) (splitString "\n\n" input_file_contents);
+    input_file_contents = pipef [ args.files.fromPath strings.strip ] input_file;
 
-    max_calouries = list-utils.max elf_inventories;
+    # String -> [Int]
+    toInventory = pipef [ strings.splitLines lists.toInts ];
+
+    # [Int] -> Ints
+    totalInventory = lists.total;
+
+    elf_invs = map (pipef [ toInventory totalInventory ]) (strings.groupLines input_file_contents);
+
+    max_cals = lists.max elf_invs;
 in
-    max_calouries
+    max_cals

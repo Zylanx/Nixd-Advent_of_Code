@@ -1,26 +1,27 @@
 #!/usr/bin/env -S nix-instantiate --eval --strict --arg nothing null
 { input_file ? null }:
 let
-    inherit (builtins) map foldl' add sort;
-    inherit (import <nixpkgs/lib>) splitString toInt removeSuffix removePrefix take;
-    
-    arg-utils = import ../arg-utils.nix;
-    list-utils = import ../list-utils.nix;
-    misc-utils = import ../misc-utils.nix;
-    
-    input_file_contents = arg-utils.files.fromPath input_file;
+    inherit (builtins) map foldl';
+    inherit (import <nixpkgs/lib>) take;
 
-    # string -> list[int]
-    toInventory = string: map toInt (splitString "\n" (removeSuffix "\n" (removePrefix "\n" string)));
-    # list[int] -> int
-    totalInventory = foldl' add 0;
+    utils = import ../utils.nix;
+    inherit (utils) lists strings misc args;
+    inherit (utils.pipe) pipef;
 
-    elf_invs = map (inventory: totalInventory (toInventory inventory)) (splitString "\n\n" input_file_contents);
+    input_file_contents = pipef [ args.files.fromPath strings.strip ] input_file;
 
-    sorted_invs = sort misc-utils.isMax elf_invs;
+    # String -> [Int]
+    toInventory = pipef [ strings.splitLines lists.toInts ];
+
+    # [Int] -> Ints
+    totalInventory = lists.total;
+
+    elf_invs = map (pipef [ toInventory totalInventory ]) (strings.groupLines input_file_contents);
+
+    sorted_invs = lists.sortMax elf_invs;
 
     top_three = take 3 sorted_invs;
 
-    totalled = foldl' add 0 top_three;
+    totalled = lists.total top_three;
 in
     totalled
